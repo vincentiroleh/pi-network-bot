@@ -6,10 +6,9 @@ dotenv.config();
 
 const PRICE_PRECISION = Number(process.env.PRICE_PRECISION) || 2;
 
-// Rate limit tracking (17 tweets/day)
 let tweetCount = 0;
 const TWEET_LIMIT = 17;
-const RESET_INTERVAL = 24 * 60 * 60 * 1000; // 24 hours
+const RESET_INTERVAL = 24 * 60 * 60 * 1000;
 setInterval(() => { tweetCount = 0; }, RESET_INTERVAL);
 
 const formatDate = () => {
@@ -34,7 +33,7 @@ const tweetPrice = async ({ price, volume24h }) => {
     tweetCount++;
     console.log(`Tweeted (${tweetCount}/${TWEET_LIMIT}): \n${message}`);
   } catch (error) {
-    console.error('Tweet error:', error.message, {error});
+    console.error('Tweet error:', error.message);
   }
 };
 
@@ -47,21 +46,21 @@ const trackPrice = async () => {
     const currentHour = now.getUTCHours();
     const currentMinute = now.getUTCMinutes();
 
-    // Tweet at 12:00-12:05 UTC daily
-    if (currentHour === 12 && currentMinute < 5 && currentDay !== lastTweetDay) {
+    const tweetTimes = [0, 8, 16];
+    if (tweetTimes.includes(currentHour) && currentMinute < 5 && currentDay !== lastTweetDay) {
       const data = await getPiPrice();
       if (data !== null) {
         const { price, volume24h } = data;
         await tweetPrice({ price, volume24h });
-        lastTweetDay = currentDay;
+        lastTweetDay = currentDay; // Reset after all 3 tweets
+        if (currentHour === 16) lastTweetDay = currentDay; // Only reset after last tweet
       } else {
         console.log('Price fetch failed at scheduled time');
       }
     } else {
-      console.log(`Waiting for 12:00 UTC... Current time: ${formatDate()}`);
+      console.log(`Waiting for next tweet time (00:00, 08:00, 16:00 UTC)... Current time: ${formatDate()}`);
     }
 
-    // Check every minute to catch the 12:00-12:05 window
     await new Promise((resolve) => setTimeout(resolve, 60000));
   }
 };
