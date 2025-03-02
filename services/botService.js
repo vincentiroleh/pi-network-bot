@@ -40,6 +40,15 @@ const tweetPrice = async ({ price, volume24h }) => {
 const trackPrice = async () => {
   let lastTweetDay = null;
 
+  // Force tweet on inital startup
+  const initialData = await getPiPrice();
+  if (initialData !== null) {
+    const { price, volume24h } = initialData;
+    await tweetPrice({ price, volume24h });
+  } else {
+    console.log('Initial price fetch failed');
+  }
+
   while (true) {
     const now = new Date();
     const currentDay = now.getUTCDate();
@@ -52,8 +61,8 @@ const trackPrice = async () => {
       if (data !== null) {
         const { price, volume24h } = data;
         await tweetPrice({ price, volume24h });
-        lastTweetDay = currentDay; // Reset after all 3 tweets
-        if (currentHour === 16) lastTweetDay = currentDay; // Only reset after last tweet
+        lastTweetDay = currentDay;
+        if (currentHour === 16) lastTweetDay = currentDay;
       } else {
         console.log('Price fetch failed at scheduled time');
       }
