@@ -3,7 +3,7 @@
 A sleek Node.js bot that tweets daily Pi Network (PI) price updates straight from CoinMarketCap to X, keeping the Pi community in the loop with style and precision.
 
 ## ✨ Features
-- **Daily Updates**: Tweets the Pi price and 24-hour volume at 12:00 UTC every day.
+- **Thrice-Daily Updates**: Tweets the Pi price and 24-hour volume at 00:00, 08:00, and 16:00 UTC (01:00, 09:00, 17:00 WAT), plus on startup.
 - **Real-Time Data**: Pulls exact prices (e.g., $2.75, not rounded) from [CoinMarketCap](https://coinmarketcap.com/currencies/pi/).
 - **Rate Limit Savvy**: Stays within X’s free tier (17 tweets/day) with built-in tracking.
 - **Clean Format**: Delivers tweets like:
@@ -55,26 +55,22 @@ PRICE_PRECISION=2  # Optional: decimals for price (default: 2)
 ```bash
 node index.js
 ```
-- Logs “Waiting for 12:00 UTC...” until it tweets daily.
+- Tweets on start, then at 00:00, 08:00, 16:00 UTC daily.
 
 ## 🚀 Deployment
 
-Deploy to Heroku for 24/7 uptime:
+Deploy to Railway for 24/7 uptime:
 
-1. **Heroku Setup**:
+1. **Railway Setup**:
 
-```bash
-heroku create pi-network-bot
-git push heroku main
-heroku ps:scale worker=1
-```
-
-2. **Add Config Vars**:
-- In Heroku dashboard > Settings > Config Vars, add .env values.
+- Sign up at [railway.com](https://railway.com), link GitHub.
+- New Project > Deploy from vincentiroleh/pi-network-bot.
+- Set node index.js as start command.
+- Add .env vars in Railway dashboard.
 
 ## 🧪 Testing
-- Local: Runs a mock tweet at 12:00 UTC daily (edit trackPrice to console.log instead of tweet for dry runs).
-- Rate Limits: 17 tweets/day (X free tier), 333 CMC calls/day—daily tweet fits perfectly.
+- Local: Tweets on start + 3x daily (edit `tweetPrice` to `console.log` for mock runs).
+- Rate Limits: 17 tweets/day (X free tier), 333 CMC calls/day—3x/day fits perfectly.
 
 ## 📜 Project Structure
 ```
@@ -92,7 +88,7 @@ pi-network-bot/
 ```
 
 ## 🌟 Why This Rocks
-- Keeps Pi fans updated with minimal fuss.
+- Keeps Pi fans updated 3x daily with minimal fuss.
 - Scales easily—add percent change or error tweets anytime.
 - Built for the free tier, no cost to run.
 
