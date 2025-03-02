@@ -1,6 +1,7 @@
-# Pi Network Data Chart Bot 🚀
+# [Pi Network Data Chart Bot](https://x.com/PiNetworkChart) 🚀
 
-A sleek Node.js bot that tweets daily Pi Network (PI) price updates straight from CoinMarketCap to X, keeping the Pi community in the loop with style and precision.
+A sleek Node.js bot that tweets Pi Network (PI) price updates three times daily from CoinMarketCap to X as **Pi Network Price Chart [@PiNetworkChart](https://x.com/PiNetworkChart)**, keeping the Pi community in the loop with style and precision.
+
 
 ## ✨ Features
 - **Thrice-Daily Updates**: Tweets the Pi price and 24-hour volume at 00:00, 08:00, and 16:00 UTC (01:00, 09:00, 17:00 WAT), plus on startup.
