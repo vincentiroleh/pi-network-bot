@@ -2,6 +2,21 @@
 
 A sleek Node.js bot that tweets Pi Network (PI) price updates three times daily from CoinMarketCap to X as **Pi Network Price Chart [@PiNetworkChart](https://x.com/PiNetworkChart)**, keeping the Pi community in the loop with style and precision.
 
+![Build Status](https://github.com/vincentiroleh/pi-network-bot/actions/workflows/docker-ci.yml/badge.svg)
+![License](https://img.shields.io/badge/license-MIT-blue.svg)
+
+## Table of Contents
+
+- [Features](#-features)
+- [Tech Stack](#-tech-stack)
+- [Setup](#-setup)
+- [Docker](#-docker)
+- [CI/CD Pipeline](#-cicd-pipeline)
+- [Testing](#-testing)
+- [Security](#-security)
+- [Contributing](#-contributing)
+- [License](#-license)
+
 ## ✨ Features
 
 - **Thrice-Daily Updates**: Tweets the Pi price and 24-hour volume at 00:00, 08:00, and 16:00 UTC (01:00, 09:00, 17:00 WAT), plus on startup.
@@ -9,22 +24,25 @@ A sleek Node.js bot that tweets Pi Network (PI) price updates three times daily 
 - **Rate Limit Savvy**: Stays within X’s free tier (17 tweets/day) with built-in tracking.
 - **Clean Format**: Delivers tweets like:
   ![Tweet Image](/img.png)
-- **Modular Design**: ES6 syntax with separate config and service files for easy tweaks.
 
 ## 🛠️ Tech Stack
 
-- **Node.js**: Powers the bot with modern ES6 (e.g., `import`, arrow functions).
-- **X API**: Posts tweets via `twitter-api-v2`.
-- **CoinMarketCap API**: Fetches price and volume with `axios`.
-- **dotenv**: Secures API keys in `.env`.
+- **Node.js**: The runtime environment for the bot.
+- **X API**: Used for posting tweets via the `twitter-api-v2` library.
+- **CoinMarketCap API**: Used for fetching price and volume data.
+- **Winston**: For logging.
+- **Jest**: For testing.
+- **Docker**: For containerization.
+- **GitHub Actions**: For CI/CD pipeline.
 
 ## 📦 Setup
 
 ### Prerequisites
 
-- Node.js (v14+)
-- X Developer Account ([developer.twitter.com](https://developer.twitter.com))
-- CoinMarketCap API Key ([coinmarketcap.com/api](https://coinmarketcap.com/api))
+- **Node.js**: Install Node.js from [nodejs.org](https://nodejs.org/).
+- **Docker**: Install Docker from [docker.com](https://www.docker.com/).
+- **X Developer Account** ([developer.twitter.com](https://developer.twitter.com))
+- **CoinMarketCap API Key** ([coinmarketcap.com/api](https://coinmarketcap.com/api))
 
 ### Installation
 
@@ -57,54 +75,49 @@ PRICE_PRECISION=2  # Optional: decimals for price (default: 2)
 - Get X keys from your app (set to “Read and Write”).
 - Get CMC key from your developer dashboard.
 
-4. **Run Locally**:
+4. **Usage**:
 
-```bash
-node index.js
-```
+- Run the bot:
 
-- Tweets on start, then at 00:00, 08:00, 16:00 UTC daily.
+  ```bash
+  npm start
+  ```
 
-## 🚀 Deployment
+- Run tests:
 
-Deploy to Railway for 24/7 uptime:
+  ```bash
+  npm test
+  ```
 
-1. **Railway Setup**:
+## 🐋 Docker
 
-- Sign up at [railway.com](https://railway.com), link GitHub.
-- New Project > Deploy from vincentiroleh/pi-network-bot.
-- Set node index.js as start command.
-- Add .env vars in Railway dashboard.
+1. Build the Docker image:
+
+   ```bash
+   docker build -t pi-price-bot .
+   ```
+
+2. Run the Docker container:
+
+   ```bash
+   docker run -d -p 8080:8080 --name pi-price-bot pi-price-bot
+   ```
+
+## ♾️ CI/CD Pipeline
+
+The project uses GitHub Actions for CI/CD. The pipeline is defined in [.github/workflows/docker-ci.yml](.github/workflows/docker-ci.yml).
 
 ## 🧪 Testing
 
 - Local: Tweets on start + 3x daily (edit `tweetPrice` to `console.log` for mock runs).
 - Rate Limits: 17 tweets/day (X free tier), 333 CMC calls/day—3x/day fits perfectly.
 
-## 📜 Project Structure
-
-```
-pi-network-bot/
-├── config/
-│   ├── xClient.js         # X API client setup
-│   └── cmcClient.js       # CoinMarketCap API client
-├── services/
-│   └── botService.js      # Tweet and tracking logic
-├── index.js               # App server entry point
-├── .env                   # API keys (not tracked)
-├── .gitignore             # Ignores .env, node_modules
-├── package.json           # Dependencies and ES6 module config
-└── README.md              # You’re here!
-```
-
-## 🌟 Why This Rocks
-
-- Keeps Pi fans updated 3x daily with minimal fuss.
-- Scales easily—add percent change or error tweets anytime.
-- Built for the free tier, no cost to run.
-
 ## 🤝 Contributing
 
-- Got ideas? Fork it, tweak it, PR it—let’s make it even cooler!
+Contributions are welcome! Please open an issue or submit a pull request.
 
-© 2025 [Vincent Iroleh](https://x.com/IrolehVincent) | [MIT License](/LICENSE)
+## 📜 License
+
+This project is licensed under the [MIT License](/LICENSE).
+
+© 2025 [Vincent Iroleh](https://x.com/IrolehVincent)
