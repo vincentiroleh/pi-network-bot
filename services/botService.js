@@ -1,28 +1,42 @@
 import xClient from '../config/xClient.js';
 import { getPiPrice } from '../config/cmcClient.js';
-import dotenv from 'dotenv';
+import { validateEnvVars } from '../config/config.js';
+import logger from '../config/logger.js';
 
-dotenv.config();
+validateEnvVars();
 
 const PRICE_PRECISION = Number(process.env.PRICE_PRECISION) || 2;
 
 let tweetCount = 0;
 const TWEET_LIMIT = 17;
 const RESET_INTERVAL = 24 * 60 * 60 * 1000;
-setInterval(() => { tweetCount = 0; }, RESET_INTERVAL);
+const resetIntervalId = setInterval(() => {
+  tweetCount = 0;
+}, RESET_INTERVAL);
 
 const formatDate = () => {
   const now = new Date();
-  const options = { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true, timeZone: 'UTC' };
+  const options = {
+    weekday: 'short',
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: true,
+    timeZone: 'UTC',
+  };
   const parts = new Intl.DateTimeFormat('en-US', options).formatToParts(now);
-  const dateStr = `${parts.find(p => p.type === 'weekday').value} ${parts.find(p => p.type === 'day').value} ${parts.find(p => p.type === 'month').value}, ${parts.find(p => p.type === 'year').value}`;
-  const timeStr = `${parts.find(p => p.type === 'hour').value}:${parts.find(p => p.type === 'minute').value} ${parts.find(p => p.type === 'dayPeriod').value}`;
+  const dateStr = `${parts.find((p) => p.type === 'weekday').value} ${parts.find((p) => p.type === 'day').value} ${parts.find((p) => p.type === 'month').value}, ${parts.find((p) => p.type === 'year').value}`;
+  const timeStr = `${parts.find((p) => p.type === 'hour').value}:${parts.find((p) => p.type === 'minute').value} ${parts.find((p) => p.type === 'dayPeriod').value}`;
   return `${dateStr} • ${timeStr}`;
 };
 
 const tweetPrice = async ({ price, volume24h }) => {
   if (tweetCount >= TWEET_LIMIT) {
-    console.log(`Rate limit reached (${tweetCount}/${TWEET_LIMIT}), skipping tweet...`);
+    logger.warn(
+      `Rate limit reached (${tweetCount}/${TWEET_LIMIT}), skipping tweet...`,
+    );
     return;
   }
   const formattedDate = formatDate();
@@ -31,47 +45,66 @@ const tweetPrice = async ({ price, volume24h }) => {
   try {
     await xClient.v2.tweet(message);
     tweetCount++;
-    console.log(`Tweeted (${tweetCount}/${TWEET_LIMIT}): \n${message}`);
+    logger.info(`Tweeted (${tweetCount}/${TWEET_LIMIT}): \n${message}`);
   } catch (error) {
-    console.error('Tweet error:', error.message);
+    logger.error('Tweet error:', error.message);
+  }
+};
+
+const shouldTweet = (currentHour, currentMinute, lastTweetHour) => {
+  const tweetTimes = [0, 8, 16];
+  return (
+    tweetTimes.includes(currentHour) &&
+    currentMinute < 5 &&
+    currentHour !== lastTweetHour
+  );
+};
+
+const fetchAndTweetPrice = async (lastTweetHour) => {
+  const data = await getPiPrice();
+  if (data !== null) {
+    const { price, volume24h } = data;
+    await tweetPrice({ price, volume24h });
+    return new Date().getUTCHours();
+  } else {
+    logger.error('Price fetch failed at scheduled time');
+    return lastTweetHour;
   }
 };
 
 const trackPrice = async () => {
-  let lastTweetDay = null;
+  let lastTweetHour = null;
 
-  // Force tweet on inital startup
+  // Force tweet on initial startup
   const initialData = await getPiPrice();
   if (initialData !== null) {
     const { price, volume24h } = initialData;
     await tweetPrice({ price, volume24h });
   } else {
-    console.log('Initial price fetch failed');
+    logger.error('Initial price fetch failed');
   }
 
   while (true) {
     const now = new Date();
-    const currentDay = now.getUTCDate();
     const currentHour = now.getUTCHours();
     const currentMinute = now.getUTCMinutes();
 
-    const tweetTimes = [0, 8, 16];
-    if (tweetTimes.includes(currentHour) && currentMinute < 5 && currentDay !== lastTweetDay) {
-      const data = await getPiPrice();
-      if (data !== null) {
-        const { price, volume24h } = data;
-        await tweetPrice({ price, volume24h });
-        lastTweetDay = currentDay;
-        if (currentHour === 16) lastTweetDay = currentDay;
-      } else {
-        console.log('Price fetch failed at scheduled time');
-      }
+    if (shouldTweet(currentHour, currentMinute, lastTweetHour)) {
+      lastTweetHour = await fetchAndTweetPrice(lastTweetHour);
     } else {
-      console.log(`Waiting for next tweet time (00:00, 08:00, 16:00 UTC)... Current time: ${formatDate()}`);
+      logger.info(
+        `Waiting for next tweet time (00:00, 08:00, 16:00 UTC)... Current time: ${formatDate()}`,
+      );
     }
 
     await new Promise((resolve) => setTimeout(resolve, 60000));
   }
 };
 
-export { tweetPrice, trackPrice };
+export {
+  tweetPrice,
+  shouldTweet,
+  fetchAndTweetPrice,
+  trackPrice,
+  resetIntervalId,
+};

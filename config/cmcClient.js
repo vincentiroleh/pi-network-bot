@@ -15,8 +15,8 @@ const getPiPrice = async () => {
     });
     const data = response.data.data.PI.quote.USD;
     return {
-      price: Number(data.price),          // Exact price (e.g., 2.75)
-      volume24h: Number(data.volume_24h) // Raw volume
+      price: Number(data.price), // Exact price (e.g., 2.75)
+      volume24h: Number(data.volume_24h), // Raw volume
     };
   } catch (error) {
     console.error('CMC API error:', error.response?.data || error.message);
