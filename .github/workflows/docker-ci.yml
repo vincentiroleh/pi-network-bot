@@ -45,5 +45,5 @@ jobs:
 
     - name: Push Docker image to Docker Hub
       run: |
-        docker tag pi-price-bot:latest ${{ secrets.DOCKER_USERNAME }}/pi-price-bot:latest
+        docker tag pi-price-bot:latest ${{ vars.DOCKER_USERNAME }}/pi-price-bot:latest
         docker push ${{ secrets.DOCKER_USERNAME }}/pi-price-bot:latest
